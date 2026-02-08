@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(del \"c:\\\\Users\\\\ASUS\\\\Desktop\\\\Storage\\\\Code\\\\gymbro\\\\gymbro_app\\\\android\\\\app\\\\build.gradle\")",
+      "Bash(flutter build:*)",
+      "Bash(flutter --version:*)",
+      "Bash(./gradlew.bat assembleDebug:*)"
+    ]
+  }
+}
