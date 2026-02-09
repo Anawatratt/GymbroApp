@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/program_model.dart';
 import '../mock_data.dart';
 
 class PlanDetailScreen extends StatefulWidget {
@@ -9,6 +10,20 @@ class PlanDetailScreen extends StatefulWidget {
 }
 
 class _PlanDetailScreenState extends State<PlanDetailScreen> {
+  late Program _program;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Program) {
+      _program = args;
+    } else {
+      // Fallback or handle error if needed, for now create a dummy or return
+      // Should ideally be passed strictly
+       _program = Program(id: '0', name: 'Unknown Plan', description: '', level: '', split: '', daysPerWeek: '', isTemplate: false);
+    }
+  }
   final List<Map<String, dynamic>> _days = [
     {'day': 'Mon', 'date': 17},
     {'day': 'Tue', 'date': 18},
@@ -28,8 +43,16 @@ class _PlanDetailScreenState extends State<PlanDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!mounted || _program.id == '0') { 
+       // If no program passed, show loading or error
+       return Scaffold(
+        appBar: AppBar(title: const Text('Workout Plan')),
+        body: const Center(child: Text('Loading...')),
+       );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Workout Plan')),
+      appBar: AppBar(title: Text(_program.name)),
       body: Column(
         children: [
           // Day selector
