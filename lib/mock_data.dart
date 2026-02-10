@@ -14,23 +14,7 @@ class Exercise {
   });
 }
 
-class Plan {
-  final String title;
-  final IconData icon;
-  final Color color;
-  final int calories;
-  final int durationMin;
-  final int exercisesCount;
-
-  Plan({
-    required this.title,
-    required this.icon,
-    required this.color,
-    required this.calories,
-    required this.durationMin,
-    required this.exercisesCount,
-  });
-}
+// Plan class and mockPlans removed as we now use Firestore data.
 
 final List<Exercise> mockExercises = [
   Exercise(name: 'Bench Press', muscle: 'Chest', difficulty: 'Intermediate', sets: '4 x 8'),
@@ -43,31 +27,4 @@ final List<Exercise> mockExercises = [
   Exercise(name: 'Deadlift', muscle: 'Back', difficulty: 'Advanced', sets: '4 x 6'),
   Exercise(name: 'Shoulder Press', muscle: 'Shoulders', difficulty: 'Intermediate', sets: '3 x 10'),
   Exercise(name: 'Bicep Curls', muscle: 'Arms', difficulty: 'Beginner', sets: '3 x 12'),
-];
-
-final List<Plan> mockPlans = [
-  Plan(
-    title: 'Full Body',
-    icon: Icons.fitness_center,
-    color: const Color(0xFF3F51B5),
-    calories: 450,
-    durationMin: 45,
-    exercisesCount: 8,
-  ),
-  Plan(
-    title: 'Upper Body',
-    icon: Icons.accessibility_new,
-    color: const Color(0xFF00897B),
-    calories: 350,
-    durationMin: 40,
-    exercisesCount: 7,
-  ),
-  Plan(
-    title: 'Lower Body',
-    icon: Icons.directions_run,
-    color: const Color(0xFFFF7043),
-    calories: 400,
-    durationMin: 40,
-    exercisesCount: 7,
-  ),
 ];

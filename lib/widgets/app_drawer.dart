@@ -191,7 +191,7 @@ class _ProfileMiniCardState extends State<ProfileMiniCard> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
               child: Row(
                 children: [
-                  CircleAvatar(radius: 18, backgroundColor: selected ? const Color(0xFF3F51B5) : Colors.grey.shade300, child: Text(Trainee[i].split(' ')[1], style: TextStyle(color: selected ? Colors.white : Colors.black87))),
+                  CircleAvatar(radius: 18, backgroundColor: selected ? const Color(0xFF3F51B5) : Colors.grey.shade300, child: Text(profiles[i].split(' ')[1], style: TextStyle(color: selected ? Colors.white : Colors.black87))),
                   const SizedBox(width: 12),
                   Expanded(child: Text(profiles[i], style: const TextStyle(fontWeight: FontWeight.w600))),
                   if (selected) const Icon(Icons.check_circle, color: Color(0xFF3F51B5)),
