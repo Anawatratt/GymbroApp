@@ -40,9 +40,11 @@ class DefaultFirebaseOptions {
     }
   }
 
+
+//env
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCeP6CeBOrrGfD_YKwjlPvciL7Up8Ax7bE',
-    appId: '1:172414151785:web:6d96d113572fc4455186f8',
+    apiKey: FIRE_BASE_API_KEY_WEB,
+    appId: FIRE_BASE_APP_ID_WEB,
     messagingSenderId: '172414151785',
     projectId: 'gymbro-f4ff7',
     authDomain: 'gymbro-f4ff7.firebaseapp.com',
@@ -51,16 +53,16 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCXjE67ACESX7jel0xW-kT9Lik6BgYoGWg',
-    appId: '1:172414151785:android:4f5b3671facf3d8b5186f8',
+    apiKey: FIRE_BASE_API_KEY_ANDROID,
+    appId: FIRE_BASE_APP_ID_ANDROID,
     messagingSenderId: '172414151785',
     projectId: 'gymbro-f4ff7',
     storageBucket: 'gymbro-f4ff7.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBSsjjo_3gDNTt0pGoXGFeLlAuWSJZhRUE',
-    appId: '1:172414151785:ios:f2cfac3fb22e301c5186f8',
+    apiKey: FIRE_BASE_API_KEY_IOS,
+    appId: FIRE_BASE_APP_ID_IOS,
     messagingSenderId: '172414151785',
     projectId: 'gymbro-f4ff7',
     storageBucket: 'gymbro-f4ff7.firebasestorage.app',
@@ -68,8 +70,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBSsjjo_3gDNTt0pGoXGFeLlAuWSJZhRUE',
-    appId: '1:172414151785:ios:f2cfac3fb22e301c5186f8',
+    apiKey: FIRE_BASE_API_KEY_MACOS,
+    appId: FIRE_BASE_APP_ID_MACOS,
     messagingSenderId: '172414151785',
     projectId: 'gymbro-f4ff7',
     storageBucket: 'gymbro-f4ff7.firebasestorage.app',
@@ -77,8 +79,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCeP6CeBOrrGfD_YKwjlPvciL7Up8Ax7bE',
-    appId: '1:172414151785:web:5e782e0afd5fa57c5186f8',
+    apiKey: FIRE_BASE_API_KEY_WINDOWS,
+    appId: FIRE_BASE_APP_ID_WINDOWS,
     messagingSenderId: '172414151785',
     projectId: 'gymbro-f4ff7',
     authDomain: 'gymbro-f4ff7.firebaseapp.com',
