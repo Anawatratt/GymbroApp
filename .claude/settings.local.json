@@ -4,7 +4,12 @@
       "Bash(del \"c:\\\\Users\\\\ASUS\\\\Desktop\\\\Storage\\\\Code\\\\gymbro\\\\gymbro_app\\\\android\\\\app\\\\build.gradle\")",
       "Bash(flutter build:*)",
       "Bash(flutter --version:*)",
-      "Bash(./gradlew.bat assembleDebug:*)"
+      "Bash(./gradlew.bat assembleDebug:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(git stash push:*)",
+      "Bash(git add:*)",
+      "Bash(flutter devices:*)",
+      "Bash(flutter run:*)"
     ]
   }
 }

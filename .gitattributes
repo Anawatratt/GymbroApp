@@ -1,0 +1,8 @@
+# Mark Flutter platform-specific generated files as linguist-generated
+# so GitHub doesn't count them in language statistics
+android/** linguist-generated=true
+ios/** linguist-generated=true
+linux/** linguist-generated=true
+macos/** linguist-generated=true
+windows/** linguist-generated=true
+web/** linguist-generated=true

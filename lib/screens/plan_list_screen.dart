@@ -1,130 +1,193 @@
 import 'package:flutter/material.dart';
-import '../models/program_model.dart';
-import '../services/program_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../app_state.dart';
 
-class PlanListScreen extends StatefulWidget {
+class PlanListScreen extends ConsumerWidget {
   const PlanListScreen({super.key});
 
-  @override
-  State<PlanListScreen> createState() => _PlanListScreenState();
-}
+  IconData _goalIcon(String goal) {
+    switch (goal) {
+      case 'muscle_gain':
+        return Icons.fitness_center;
+      case 'strength':
+        return Icons.bolt;
+      case 'general_fitness':
+        return Icons.directions_run;
+      default:
+        return Icons.sports_gymnastics;
+    }
+  }
 
-class _PlanListScreenState extends State<PlanListScreen> {
-  final ProgramService _programService = ProgramService();
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final trainee = ref.watch(appStateProvider).currentTrainee;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Workout Plan')),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Get ready to train, JJ',
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            child: Text(
+              'Get ready to train, ${trainee.name}',
               style: TextStyle(color: Colors.grey[500], fontSize: 15),
             ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: StreamBuilder<List<Program>>(
-                stream: _programService.getPrograms(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('programs')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.event_note, size: 48, color: Colors.grey[300]),
+                        const SizedBox(height: 8),
+                        Text('No programs found',
+                            style: TextStyle(color: Colors.grey[400], fontSize: 15)),
+                      ],
+                    ),
+                  );
+                }
 
-                  final programs = snapshot.data ?? [];
+                final docs = snapshot.data!.docs;
 
-                  if (programs.isEmpty) {
-                    return const Center(child: Text('No workout plans found.'));
-                  }
+                return ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  itemCount: docs.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+                    final programId = docs[index].id;
+                    final name = data['program_name'] ?? '';
+                    final desc = data['description'] ?? '';
+                    final goal = data['goal'] ?? '';
+                    final diff = data['difficulty_level'] ?? '';
+                    final daysPerWeek = data['days_per_week'] ?? 0;
+                    final durationWeeks = data['duration_weeks'] ?? 0;
+                    final isActive = data['is_active'] == true;
 
-                  return ListView.separated(
-                    itemCount: programs.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 14),
-                    itemBuilder: (context, index) {
-                      final p = programs[index];
-                      return Container(
+                    return GestureDetector(
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        '/planDetail',
+                        arguments: {
+                          'programId': programId,
+                          'programName': name,
+                        },
+                      ),
+                      child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
-                              color: p.color.withAlpha(15),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withAlpha(12),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: p.color.withAlpha(25),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Icon(p.icon, color: p.color, size: 28),
-                            ),
-                            const SizedBox(width: 16),
+                            Icon(_goalIcon(goal),
+                                size: 28, color: Colors.grey[700]),
+                            const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    p.name,
-                                    style: const TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF1A1A2E),
-                                    ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(name,
+                                            style: const TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w700)),
+                                      ),
+                                      if (isActive)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF4CAF50)
+                                                .withAlpha(20),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: const Text('Active',
+                                              style: TextStyle(
+                                                  color: Color(0xFF4CAF50),
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600)),
+                                        ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    '${p.calories} kcal  ·  ${p.durationMin} min  ·  ${p.exercisesCount} exercises',
-                                    style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: 13,
-                                    ),
+                                  const SizedBox(height: 4),
+                                  Text(desc,
+                                      style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 13),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: [
+                                      _mutedPill('$daysPerWeek days/wk'),
+                                      _mutedPill('$durationWeeks weeks'),
+                                      _mutedPill(_capitalize(diff)),
+                                    ],
                                   ),
                                 ],
                               ),
                             ),
-                            ElevatedButton(
-                              onPressed: () =>
-                                  Navigator.pushNamed(context, '/planDetail', arguments: p),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: p.color,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'START',
-                                style: TextStyle(
-                                    fontSize: 13, fontWeight: FontWeight.w700),
-                              ),
-                            ),
+                            const SizedBox(width: 8),
+                            Icon(Icons.chevron_right,
+                                color: Colors.grey[350], size: 22),
                           ],
                         ),
-                      );
-                    },
-                  );
-                },
-              ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mutedPill(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.grey[600],
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
+
+  String _capitalize(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }

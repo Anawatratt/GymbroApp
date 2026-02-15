@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/plan_list_screen.dart';
 import 'screens/plan_detail_screen.dart';
 import 'screens/custom_plan_screen.dart';
-import 'screens/switch_profile_screen.dart';
 import 'screens/progress_analytics_screen.dart';
 import 'screens/progress_breakdown_screen.dart';
+import 'screens/notes_screen.dart';
+import 'screens/workout_history_screen.dart';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const GymbroApp());
+  // await seedAll();
+  runApp(const ProviderScope(child: GymbroApp()));
 }
 
 class GymbroApp extends StatelessWidget {
@@ -68,9 +70,10 @@ class GymbroApp extends StatelessWidget {
         '/plans': (context) => const PlanListScreen(),
         '/planDetail': (context) => const PlanDetailScreen(),
         '/customPlan': (context) => const CustomPlanScreen(),
-        '/switchProfile': (context) => const SwitchProfileScreen(),
         '/progressAnalytics': (context) => const ProgressAnalyticsScreen(),
         '/progressBreakdown': (context) => const ProgressBreakdownScreen(),
+        '/notes': (context) => const NotesScreen(),
+        '/workoutHistory': (context) => const WorkoutHistoryScreen(),
       },
     );
   }

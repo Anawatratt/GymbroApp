@@ -1,106 +1,188 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../app_state.dart';
 
-class ProgressAnalyticsScreen extends StatelessWidget {
+String _formatNum(int n) =>
+    n.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},');
+
+class ProgressAnalyticsScreen extends ConsumerWidget {
   const ProgressAnalyticsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final trainee = ref.watch(appStateProvider).currentTrainee;
+    final mp = trainee.muscleProgress;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Progress')),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-        child: ListView(
-          children: [
-            const Text(
-              'Training Analytics',
-              style: TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF1A1A2E)),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        children: [
+          // ── Trainee identity banner ──
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: trainee.avatarColor.withAlpha(18),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: trainee.avatarColor.withAlpha(40)),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Your muscle group workload overview',
-              style: TextStyle(color: Colors.grey[500], fontSize: 14),
-            ),
-            const SizedBox(height: 18),
-
-            // Summary card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _SummaryItem(label: 'Total Sets', value: '1,240'),
-                  Container(width: 1, height: 40, color: Colors.grey[200]),
-                  _SummaryItem(label: 'Total Reps', value: '9,510'),
-                  Container(width: 1, height: 40, color: Colors.grey[200]),
-                  _SummaryItem(label: 'Calories', value: '14,200'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            const Text(
-              'Large Muscle Groups',
-              style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E)),
-            ),
-            const SizedBox(height: 12),
-            _ProgressBar(label: 'Chest', value: 0.75, color: Colors.redAccent),
-            _ProgressBar(label: 'Back', value: 0.60, color: const Color(0xFF3F51B5)),
-            _ProgressBar(label: 'Legs', value: 0.85, color: const Color(0xFF4CAF50)),
-            const SizedBox(height: 20),
-
-            Row(
+            child: Row(
               children: [
-                const Text(
-                  'Small Muscle Groups',
-                  style: TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E)),
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: trainee.avatarColor,
+                  child: Text(trainee.initials,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14)),
                 ),
-                const Spacer(),
-                TextButton(
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/progressBreakdown'),
-                  child: const Text('See all'),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("${trainee.name}'s Progress",
+                          style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1A1A2E))),
+                      const SizedBox(height: 2),
+                      Text('Training analytics overview',
+                          style: TextStyle(
+                              color: Colors.grey[500], fontSize: 13)),
+                    ],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            _ProgressBar(label: 'Arms', value: 0.48, color: const Color(0xFFFF7043)),
-            _ProgressBar(label: 'Core', value: 0.72, color: const Color(0xFF00897B)),
-            _ProgressBar(label: 'Shoulders', value: 0.55, color: const Color(0xFF7E57C2)),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Summary stats grid (2x2) ──
+          Row(
+            children: [
+              Expanded(
+                  child: _StatTile(
+                      icon: Icons.fitness_center,
+                      iconColor: const Color(0xFF3F51B5),
+                      value: _formatNum(trainee.totalSets),
+                      label: 'Total Sets')),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: _StatTile(
+                      icon: Icons.repeat,
+                      iconColor: const Color(0xFF00897B),
+                      value: _formatNum(trainee.totalReps),
+                      label: 'Total Reps')),
+            ],
+          ),
+          const SizedBox(height: 28),
+
+          // ── Large muscle groups ──
+          _SectionHeader(title: 'Large Muscle Groups'),
+          const SizedBox(height: 12),
+          _ProgressBar(label: 'Chest', value: mp['Chest'] ?? 0, color: Colors.redAccent),
+          _ProgressBar(label: 'Back', value: mp['Back'] ?? 0, color: const Color(0xFF3F51B5)),
+          _ProgressBar(label: 'Legs', value: mp['Legs'] ?? 0, color: const Color(0xFF4CAF50)),
+          const SizedBox(height: 20),
+
+          // ── Small muscle groups ──
+          Row(
+            children: [
+              const Expanded(child: _SectionHeader(title: 'Small Muscle Groups')),
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/progressBreakdown'),
+                child: Text('See all',
+                    style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _ProgressBar(label: 'Arms', value: mp['Arms'] ?? 0, color: const Color(0xFFFF7043)),
+          _ProgressBar(label: 'Core', value: mp['Core'] ?? 0, color: const Color(0xFF00897B)),
+          _ProgressBar(label: 'Shoulders', value: mp['Shoulders'] ?? 0, color: const Color(0xFF7E57C2)),
+        ],
       ),
     );
   }
 }
 
-class _SummaryItem extends StatelessWidget {
-  final String label;
-  final String value;
+// ── Section header (read-only label) ────────────────────
 
-  const _SummaryItem({required this.label, required this.value});
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-              fontWeight: FontWeight.w800, fontSize: 18, color: Color(0xFF1A1A2E)),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-      ],
+    return Text(title,
+        style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1A1A2E)));
+  }
+}
+
+// ── Stat tile (icon + value + label) ────────────────────
+
+class _StatTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String value;
+  final String label;
+
+  const _StatTile({
+    required this.icon,
+    required this.iconColor,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withAlpha(20),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(value,
+                    style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1A1A2E))),
+                Text(label,
+                    style: TextStyle(
+                        color: Colors.grey[500], fontSize: 11)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
+
+// ── Progress bar (read-only) ────────────────────────────
 
 class _ProgressBar extends StatelessWidget {
   final String label;

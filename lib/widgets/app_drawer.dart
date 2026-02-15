@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../app_state.dart';
+import '../mock_data.dart';
 
-class AppDrawer extends StatelessWidget {
-  const AppDrawer({Key? key}) : super(key: key);
+class AppDrawer extends ConsumerWidget {
+  const AppDrawer({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width * 0.78; // ~78%
+  Widget build(BuildContext context, WidgetRef ref) {
+    final width = MediaQuery.of(context).size.width * 0.78;
 
     return Drawer(
       width: width,
@@ -22,12 +25,12 @@ class AppDrawer extends StatelessWidget {
               children: [
                 _DrawerHeader(),
                 const Divider(height: 1),
-                // Main menu
+                // Main menu (adapts to mode)
                 Expanded(
                   child: ListView(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     children: [
-                      MenuItemTile(
+                      _MenuItemTile(
                         icon: Icons.calendar_month_rounded,
                         title: 'Workout Plan',
                         onTap: () {
@@ -35,15 +38,15 @@ class AppDrawer extends StatelessWidget {
                           Navigator.pushNamed(context, '/plans');
                         },
                       ),
-                      MenuItemTile(
+                      _MenuItemTile(
                         icon: Icons.search_rounded,
-                        title: 'Exercises',
+                        title: 'Search',
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.pushNamed(context, '/search');
                         },
                       ),
-                      MenuItemTile(
+                      _MenuItemTile(
                         icon: Icons.bar_chart_rounded,
                         title: 'Progress',
                         onTap: () {
@@ -51,47 +54,64 @@ class AppDrawer extends StatelessWidget {
                           Navigator.pushNamed(context, '/progressAnalytics');
                         },
                       ),
-                      MenuItemTile(
-                        icon: Icons.note_alt_outlined,
+                      _MenuItemTile(
+                        icon: Icons.sticky_note_2_rounded,
                         title: 'Notes',
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.pushNamed(context, '/notes');
                         },
                       ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text('Trainee', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.grey[800])),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                        child: ProfileMiniCard(),
+                      _MenuItemTile(
+                        icon: Icons.history_rounded,
+                        title: 'Workout History',
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.pushNamed(context, '/workoutHistory');
+                        },
                       ),
                     ],
                   ),
                 ),
+                // Trainee section — fixed at bottom
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Text('Trainee',
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey[600])),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: _ProfileMiniCard(),
+                ),
+                const SizedBox(height: 8),
                 const Divider(height: 1),
                 // Footer
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
                   child: Row(
                     children: [
                       Expanded(
                         child: TextButton.icon(
                           onPressed: () {
-                            // placeholder logout
                             Navigator.pop(context);
                           },
-                          icon: const Icon(Icons.logout, color: Colors.black54),
-                          label: const Text('Logout', style: TextStyle(color: Colors.black87)),
+                          icon:
+                              const Icon(Icons.logout, color: Colors.black54),
+                          label: const Text('Logout',
+                              style: TextStyle(color: Colors.black87)),
                           style: TextButton.styleFrom(
                             alignment: Alignment.centerLeft,
                           ),
                         ),
                       ),
-                      Text('v1.0.0', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                      Text('v1.0.0',
+                          style: TextStyle(
+                              color: Colors.grey[500], fontSize: 12)),
                     ],
                   ),
                 ),
@@ -104,22 +124,34 @@ class AppDrawer extends StatelessWidget {
   }
 }
 
-class _DrawerHeader extends StatelessWidget {
+class _DrawerHeader extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(appStateProvider);
+    final trainee = state.currentTrainee;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
-          const CircleAvatar(radius: 28, backgroundColor: Color(0xFF3F51B5), child: Text('JJ', style: TextStyle(color: Colors.white))),
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: trainee.avatarColor,
+            child: Text(trainee.initials,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text('JJ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                SizedBox(height: 4),
-                Text('My Profile', style: TextStyle(color: Colors.grey)),
+              children: [
+                Text(trainee.name,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 4),
+                Text(state.isOwnerMode ? 'My Profile' : 'Viewing Trainee',
+                    style: const TextStyle(color: Colors.grey)),
               ],
             ),
           ),
@@ -136,22 +168,25 @@ class _DrawerHeader extends StatelessWidget {
   }
 }
 
-class MenuItemTile extends StatelessWidget {
+class _MenuItemTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final VoidCallback? onTap;
 
-  const MenuItemTile({Key? key, required this.icon, required this.title, this.onTap}) : super(key: key);
+  const _MenuItemTile(
+      {required this.icon, required this.title, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: Colors.black87),
-      title: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+      title: Text(title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
       horizontalTitleGap: 4,
       onTap: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       dense: true,
       visualDensity: VisualDensity.compact,
       tileColor: Colors.transparent,
@@ -161,40 +196,55 @@ class MenuItemTile extends StatelessWidget {
   }
 }
 
-class ProfileMiniCard extends StatefulWidget {
+class _ProfileMiniCard extends ConsumerWidget {
   @override
-  State<ProfileMiniCard> createState() => _ProfileMiniCardState();
-}
-
-class _ProfileMiniCardState extends State<ProfileMiniCard> {
-  int _selected = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final profiles = List.generate(3, (i) => 'User ${i + 1}');
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(appStateProvider);
+    final trainees = mockTrainees;
 
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(6), blurRadius: 8, offset: const Offset(0,2))],
         border: Border.all(color: Colors.grey.withAlpha(40)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: List.generate(profiles.length, (i) {
-          final selected = i == _selected;
+        children: List.generate(trainees.length, (i) {
+          final t = trainees[i];
+          final selected = t.id == state.currentProfileId;
           return InkWell(
-            onTap: () => setState(() => _selected = i),
+            borderRadius: BorderRadius.circular(8),
+            onTap: () =>
+                ref.read(appStateProvider.notifier).switchProfile(t.id),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
               child: Row(
                 children: [
-                  CircleAvatar(radius: 18, backgroundColor: selected ? const Color(0xFF3F51B5) : Colors.grey.shade300, child: Text(profiles[i].split(' ')[1], style: TextStyle(color: selected ? Colors.white : Colors.black87))),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(profiles[i], style: const TextStyle(fontWeight: FontWeight.w600))),
-                  if (selected) const Icon(Icons.check_circle, color: Color(0xFF3F51B5)),
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: selected
+                        ? t.avatarColor
+                        : Colors.grey.shade300,
+                    child: Text(
+                      t.initials,
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              selected ? Colors.white : Colors.black87),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: Text(t.name,
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w600))),
+                  if (selected)
+                    const Icon(Icons.check_circle,
+                        size: 20, color: Color(0xFF3F51B5)),
                 ],
               ),
             ),
